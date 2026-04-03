@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 
@@ -18,6 +18,7 @@ public partial class BookstoreContext : DbContext
         modelBuilder.Entity<Book>(entity =>
         {
             entity.HasIndex(e => e.BookID, "IX_Books_BookID").IsUnique();
+            entity.Property(e => e.BookID).ValueGeneratedOnAdd();
         });
 
         OnModelCreatingPartial(modelBuilder);
