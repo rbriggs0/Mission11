@@ -1,15 +1,16 @@
-# Deploy React (Vite) frontend to Azure Static Web Apps.
+# Matches course video flow: Azure Static Web Apps + GitHub Actions (React / Vite, app in frontend/, out: dist).
 #
-# Before this succeeds you must:
-# 1. In Azure Portal: create a Static Web App linked to this repo (or add deployment token manually).
-# 2. In GitHub: repo Settings → Secrets → Actions → add secret
-#    AZURE_STATIC_WEB_APPS_API_TOKEN (value from Azure: Static Web App → Manage deployment token).
-# If Azure already added a similar workflow when you created the SWA, keep one workflow and delete the duplicate.
+# REQUIRED — or this job fails with "deployment_token was not provided":
+# Azure Portal → your Static Web App → Manage deployment token → copy value.
+# GitHub repo → Settings → Secrets and variables → Actions → New repository secret.
+# Name must match below. If Azure created the SWA with "Sign in with GitHub", the secret may be named
+# AZURE_STATIC_WEB_APPS_API_TOKEN_<suffix>. Either rename your secret to match, or change this file to use Azure's name.
 #
-# After first deploy: add your Static Web App URL (no trailing slash) to the API CORS list
-# (Azure App Service Configuration for the backend, or appsettings.Production Cors:AllowedOrigins).
+# Also add your Static Web App URL (https only, no trailing slash) to backend CORS (Program.cs / appsettings / App Service config).
+#
+# If you instead deploy the frontend with mission13_mission13-frontend-rb.yml (Azure Web App), you can delete this file to avoid duplicate deploys.
 
-name: Mission13 Azure Static Web Apps (frontend)
+name: Azure Static Web Apps CI/CD (Mission13 frontend)
 
 on:
   push:
@@ -23,17 +24,19 @@ on:
 jobs:
   build_and_deploy:
     runs-on: ubuntu-latest
-    name: Build and deploy frontend
+    name: Build and deploy Static Web App
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v4
 
       - uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: '22'
           cache: npm
           cache-dependency-path: frontend/package-lock.json
 
-      - name: Install and build (Vite needs VITE_API_URL at build time)
+      - name: Build Vite (VITE_API_URL baked in at build time)
         working-directory: frontend
         env:
           VITE_API_URL: https://mission13-backend-rb-cnddcsdshkemdbe9.canadacentral-01.azurewebsites.net
@@ -47,3 +50,4 @@ jobs:
           action: upload
           app_location: frontend/dist
           skip_app_build: true
+          production_branch: Mission13
