@@ -1,0 +1,49 @@
+# Deploy React (Vite) frontend to Azure Static Web Apps.
+#
+# Before this succeeds you must:
+# 1. In Azure Portal: create a Static Web App linked to this repo (or add deployment token manually).
+# 2. In GitHub: repo Settings → Secrets → Actions → add secret
+#    AZURE_STATIC_WEB_APPS_API_TOKEN (value from Azure: Static Web App → Manage deployment token).
+# If Azure already added a similar workflow when you created the SWA, keep one workflow and delete the duplicate.
+#
+# After first deploy: add your Static Web App URL (no trailing slash) to the API CORS list
+# (Azure App Service Configuration for the backend, or appsettings.Production Cors:AllowedOrigins).
+
+name: Mission13 Azure Static Web Apps (frontend)
+
+on:
+  push:
+    branches:
+      - Mission13
+    paths:
+      - 'frontend/**'
+      - '.github/workflows/azure-static-web-apps-mission13-frontend.yml'
+  workflow_dispatch:
+
+jobs:
+  build_and_deploy:
+    runs-on: ubuntu-latest
+    name: Build and deploy frontend
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install and build (Vite needs VITE_API_URL at build time)
+        working-directory: frontend
+        env:
+          VITE_API_URL: https://mission13-backend-rb-cnddcsdshkemdbe9.canadacentral-01.azurewebsites.net
+        run: npm ci && npm run build
+
+      - name: Deploy to Azure Static Web Apps
+        uses: Azure/static-web-apps-deploy@v1
+        with:
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          action: upload
+          app_location: frontend/dist
+          skip_app_build: true
