@@ -1,3 +1,7 @@
+# Frontend on Azure Web App (OIDC — same secrets as backend). No Static Web Apps deployment token required.
+# If your instructor uses Static Web Apps instead, add AZURE_STATIC_WEB_APPS_API_TOKEN in GitHub Actions secrets
+# and use Azure’s generated workflow, or restore azure-static-web-apps-mission13-frontend.yml with that secret set.
+#
 # Same pattern as mission13_mission13-backend-rb.yml: build artifact → azure/login → webapps-deploy.
 #
 # Prereqs in Azure Portal:
@@ -13,13 +17,11 @@
 
 name: Build and deploy frontend to Azure Web App - mission13-frontend-rb-fggkfvbyfnatgva7
 
+# No path filter: any push to Mission13 redeploys the static site so it does not stay stale after backend-only commits.
 on:
   push:
     branches:
       - Mission13
-    paths:
-      - 'frontend/**'
-      - '.github/workflows/mission13_mission13-frontend-rb.yml'
   workflow_dispatch:
 
 jobs:
@@ -47,6 +49,7 @@ jobs:
         run: |
           mkdir -p site-deploy
           cp -r frontend/dist/. site-deploy/
+          test -f site-deploy/index.html
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -68,6 +71,9 @@ jobs:
           name: frontend-site
           path: site
 
+      - name: Zip wwwroot payload (Kudu zip deploy expects flat archive)
+        run: (cd site && zip -r ../release.zip .) && unzip -l release.zip | head -20
+
       - name: Login to Azure
         uses: azure/login@v2
         with:
@@ -79,5 +85,5 @@ jobs:
         uses: azure/webapps-deploy@v3
         with:
           app-name: 'mission13-frontend-rb-fggkfvbyfnatgva7'
-          slot-name: 'Production'
-          package: site
+          resource-group-name: 'appsvc_windows_eastus'
+          package: release.zip
