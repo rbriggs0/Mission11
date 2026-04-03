@@ -1,7 +1,7 @@
 # Same pattern as mission13_mission13-backend-rb.yml: build artifact → azure/login → webapps-deploy.
 #
 # Prereqs in Azure Portal:
-# 1. Create a Web App for the static site, e.g. name: Mission13-Frontend-RB (pick a region/plan you can use).
+# 1. Web App name must match app-name below (subdomain of *.azurewebsites.net).
 # 2. Recommended: Windows + .NET or "Static HTML" style hosting so IIS uses public/web.config (SPA routes).
 #    If you use Linux only, deep links like /adminbooks may 404 unless you add your own rewrite layer.
 # 3. Grant the same GitHub Actions app registration access to this Web App:
@@ -11,7 +11,7 @@
 # Uses the same OIDC secrets as the backend workflow so one federated login can deploy both apps
 # (after IAM is set on the frontend Web App).
 
-name: Build and deploy frontend to Azure Web App - Mission13-Frontend-RB
+name: Build and deploy frontend to Azure Web App - mission13-frontend-rb-fggkfvbyfnatgva7
 
 on:
   push:
@@ -78,6 +78,6 @@ jobs:
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
         with:
-          app-name: 'Mission13-Frontend-RB'
+          app-name: 'mission13-frontend-rb-fggkfvbyfnatgva7'
           slot-name: 'Production'
           package: site
