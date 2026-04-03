@@ -81,9 +81,9 @@ jobs:
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_DFF58413E0DF459D957A0A4AC1FE905E }}
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_83EC915B83FB44AF9894AC8E190EBECB }}
 
+      # app-name = subdomain of *.azurewebsites.net (Overview on the Web App). Omit resource-group if yours differs from portal.
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
         with:
           app-name: 'mission13-frontend-rb-fggkfvbyfnatgva7'
-          resource-group-name: 'appsvc_windows_eastus'
           package: release.zip
